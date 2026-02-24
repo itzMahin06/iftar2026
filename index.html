@@ -150,15 +150,40 @@
     </main>
 
     <script>
-        // Countdown
-        const eventDate = new Date("March 18, 2026 17:15:00").getTime();
-        setInterval(() => {
-            const now = new Date().getTime();
-            const diff = eventDate - now;
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            document.getElementById("countdown").innerHTML = `<span>${days} দিন</span> <span class="text-gray-300">|</span> <span>${hours} ঘণ্টা</span>`;
-        }, 1000);
+        // ইংরেজি সংখ্যাকে বাংলায় রূপান্তর করার ফাংশন
+function toBengaliNumber(num) {
+    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return num.toString().split('').map(digit => {
+        const index = englishNumbers.indexOf(digit);
+        return index !== -1 ? bengaliNumbers[index] : digit;
+    }).join('');
+}
+
+// কাউন্টডাউন টাইমার আপডেট
+const eventDate = new Date("March 18, 2026 17:15:00").getTime();
+
+setInterval(() => {
+    const now = new Date().getTime();
+    const diff = eventDate - now;
+
+    if (diff > 0) {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        // সংখ্যাগুলোকে বাংলায় রূপান্তর করে দেখানো
+        const bengaliDays = toBengaliNumber(days);
+        const bengaliHours = toBengaliNumber(hours);
+
+        document.getElementById("countdown").innerHTML = `
+            <span>${bengaliDays} দিন</span> 
+            <span class="text-gray-300">|</span> 
+            <span>${bengaliHours} ঘণ্টা</span>
+        `;
+    } else {
+        document.getElementById("countdown").innerHTML = "মাহফিল শুরু হয়েছে!";
+    }
+}, 1000);
 
         // Copy Function
         function copyNumber(num) {
