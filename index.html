@@ -188,31 +188,58 @@
             }
         }
 
-        // Form Submit
-        document.getElementById("iftarForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            const name = document.getElementById("userName").value;
-            const school = document.getElementById("schoolName").value;
-            const method = document.getElementById("paymentMethod").value;
-            const extra = method === "ক্যাশ" ? document.getElementById("collectorName").value : document.getElementById("trxID").value;
+        // Form Submit & Data send to Google Sheets
+document.getElementById("iftarForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    // বাটন লোডিং স্টেট
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> প্রসেসিং হচ্ছে...';
+    submitBtn.disabled = true;
 
-            document.getElementById("cardName").innerText = name;
-            document.getElementById("cardSchool").innerText = school;
-            document.getElementById("cardPayment").innerText = `${method} (${extra})`;
-            
-            document.getElementById("iftarForm").classList.add("hidden");
-            document.getElementById("invitationSection").classList.remove("hidden");
+    const name = document.getElementById("userName").value;
+    const school = document.getElementById("schoolName").value;
+    const method = document.getElementById("paymentMethod").value;
+    const extra = method === "ক্যাশ" ? document.getElementById("collectorName").value : document.getElementById("trxID").value;
 
-            // Google Sheet URL Replace
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbwbDItmrUzxKycRp8I9BgDmGEatFUUArBfriCGYAPckYxvuguahyXLI2mnsrUjz2YDtgg/exec';
-            const formData = new FormData();
-            formData.append('Name', name);
-            formData.append('School', school);
-            formData.append('Method', method);
-            formData.append('Details', extra);
+    // কার্ডে ডাটা সেট করা
+    document.getElementById("cardName").innerText = name;
+    document.getElementById("cardSchool").innerText = school;
+    document.getElementById("cardPayment").innerText = `${method} (${extra})`;
 
-            fetch(scriptURL, { method: 'POST', body: formData}).catch(err => console.log(err));
-        });
+    // Google Sheet URL (এখানে আপনার আসল URL টি বসান)
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyNjRzOiLfDGFDuUQyAPLM6hw4rxQyrHgdukeOGNnoO08cGkPCxE6Ao2EXT20PkE3lkHg/exec'; 
+
+    // ডাটা পাঠানোর সঠিক পদ্ধতি (URLSearchParams ব্যবহার করা ভালো)
+    const formData = new URLSearchParams();
+    formData.append('Name', name);
+    formData.append('School', school);
+    formData.append('Method', method);
+    formData.append('Details', extra);
+
+    fetch(scriptURL, { 
+        method: 'POST', 
+        mode: 'no-cors', // এটি গুরুত্বপূর্ণ CORS সমস্যা এড়াতে
+        cache: 'no-cache',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData.toString()
+    })
+    .then(() => {
+        // সফলভাবে সাবমিট হলে কার্ড দেখাবে
+        document.getElementById("iftarForm").classList.add("hidden");
+        document.getElementById("invitationSection").classList.remove("hidden");
+        window.scrollTo(0, document.body.scrollHeight);
+    })
+    .catch(error => {
+        alert("দুঃখিত! ডাটা সেভ করা যায়নি। আবার চেষ্টা করুন।");
+        console.error('Error!', error.message);
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    });
+});
 
         // Download
         function downloadCard() {
